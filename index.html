@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DrayOS Policy Route – Tối ưu Multi-WAN theo từng loại Traffic</title>
+<meta name="description" content="Phân tích DrayOS Policy Route: tối ưu hiệu quả băng thông, ổn định phiên, kiểm soát Public IP, trải nghiệm ứng dụng và thiết kế Multi-WAN.">
+
+<style>
+:root{
+    --navy:#14243a;--navy2:#1b2a4a;--orange:#f37021;
+    --orange-light:#ff9b5a;--bg:#f5f7fa;--card:#fff;
+    --text:#182230;--muted:#667085;--border:#e5e9ef;
+    --radius:18px;--shadow:0 12px 35px rgba(20,36,58,.08)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:var(--bg);line-height:1.65}
+a{color:inherit;text-decoration:none}
+.container{width:min(1180px,calc(100% - 40px));margin:auto}
+
+/* BRAND */
+.brand-group{display:flex;align-items:center;gap:18px}
+.logo-ap{width:108px;height:58px;object-fit:contain;display:block}
+.logo-draytek{width:145px;height:auto;display:block}
+.brand-divider{width:1px;height:34px;background:#d7dce3}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);border-bottom:1px solid rgba(229,233,239,.8)}
+.nav{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:30px}
+.nav-links{display:flex;gap:25px;font-size:14px;font-weight:600;color:#475467}
+.nav-links a:hover{color:var(--orange)}
+
+/* HERO */
+.hero{position:relative;overflow:hidden;padding:110px 0 100px;color:white;background:radial-gradient(circle at 85% 20%,rgba(243,112,33,.25),transparent 30%),radial-gradient(circle at 15% 80%,rgba(32,184,216,.18),transparent 30%),linear-gradient(135deg,#101d31,#1b2a4a 60%,#223c61)}
+.hero-content{max-width:850px}
+.eyebrow{display:inline-flex;padding:7px 14px;margin-bottom:22px;border:1px solid rgba(255,255,255,.2);border-radius:30px;background:rgba(255,255,255,.08);backdrop-filter:blur(10px);color:#dce8f7;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+h1{font-size:clamp(38px,5vw,64px);line-height:1.08;letter-spacing:-.035em;margin-bottom:25px}
+h1 span{color:var(--orange-light)}
+.hero-description{max-width:760px;color:#d7e0eb;font-size:20px;line-height:1.7}
+.hero-buttons{display:flex;flex-wrap:wrap;gap:14px;margin-top:35px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;border-radius:10px;font-weight:700;font-size:15px;transition:.2s ease}
+.btn-primary{color:white;background:var(--orange)}
+.btn-primary:hover{transform:translateY(-2px);background:#ff7e2d}
+.btn-secondary{color:white;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08)}
+
+/* COMMON */
+section{padding:90px 0}
+.section-heading{max-width:780px;margin-bottom:45px}
+.section-label{margin-bottom:10px;color:var(--orange);font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+h2{color:var(--navy);font-size:clamp(30px,4vw,44px);line-height:1.2;letter-spacing:-.025em;margin-bottom:16px}
+.section-heading p{color:var(--muted);font-size:17px}
+
+/* OVERVIEW */
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.problem-card{padding:30px;background:white;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.problem-number{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin-bottom:20px;border-radius:12px;color:white;background:var(--navy);font-weight:800}
+.problem-card h3{margin-bottom:10px;color:var(--navy);font-size:20px}
+.problem-card p{color:var(--muted)}
+
+/* ARCHITECTURE */
+.architecture{background:#eef2f7}
+.architecture-box{padding:45px;border-radius:24px;background:white;box-shadow:var(--shadow);border:1px solid var(--border)}
+.flow{display:grid;grid-template-columns:1fr 35px 1fr 35px 1fr 35px 1fr 35px 1fr;align-items:center;gap:12px}
+.flow-item{min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:18px;border-radius:16px;border:1px solid var(--border);background:#fafbfc}
+.flow-item strong{color:var(--navy);margin-bottom:5px}
+.flow-item span{color:var(--muted);font-size:13px}
+.flow-arrow{color:var(--orange);font-size:25px;text-align:center}
+
+/* PILLARS */
+.pillar{padding:90px 0}
+.pillar:nth-child(even){background:#f9fafb}
+.pillar-grid{display:grid;grid-template-columns:110px 1fr;gap:35px;align-items:start}
+.pillar-number{width:90px;height:90px;display:flex;align-items:center;justify-content:center;border-radius:24px;color:white;background:linear-gradient(135deg,var(--navy),#294d79);font-size:30px;font-weight:800;box-shadow:0 15px 30px rgba(20,36,58,.18)}
+.pillar-intro{color:var(--muted);font-size:17px;margin-bottom:30px}
+.feature-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.feature{padding:24px;border:1px solid var(--border);border-radius:16px;background:white}
+.feature h4{color:var(--navy);margin-bottom:8px}
+.feature p{color:var(--muted);font-size:15px}
+
+/* TABLE */
+.comparison{padding:90px 0}
+.comparison-table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;background:white;border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+.comparison-table th,.comparison-table td{padding:18px 20px;text-align:left;border-bottom:1px solid var(--border)}
+.comparison-table th{color:white;background:var(--navy)}
+.comparison-table tr:last-child td{border-bottom:none}
+.comparison-table td{color:#475467}
+.tag{display:inline-block;padding:4px 9px;border-radius:20px;font-size:12px;font-weight:700}
+.tag-ip{color:#175cd3;background:#eff8ff}
+.tag-session{color:#b54708;background:#fffaeb}
+
+/* MATRIX */
+.matrix{background:var(--navy);color:white}
+.matrix h2{color:white}
+.matrix .section-heading p{color:#b9c6d6}
+.matrix-table-wrapper{overflow-x:auto}
+.matrix-table{width:100%;min-width:850px;border-collapse:collapse;background:rgba(255,255,255,.06);border-radius:18px;overflow:hidden}
+.matrix-table th,.matrix-table td{padding:17px;border:1px solid rgba(255,255,255,.1);text-align:left}
+.matrix-table th{background:rgba(255,255,255,.1)}
+.matrix-table td{color:#d5deea}
+
+/* TROUBLESHOOTING */
+.troubleshooting{background:white}
+.debug-flow{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;padding:35px;border-radius:20px;background:#f6f8fb;border:1px solid var(--border)}
+.debug-step{padding:13px 17px;border-radius:10px;background:white;border:1px solid var(--border);color:var(--navy);font-weight:700;box-shadow:0 5px 15px rgba(0,0,0,.04)}
+.debug-arrow{color:var(--orange);font-size:20px}
+
+/* CONCLUSION */
+.conclusion{padding:100px 0;background:radial-gradient(circle at 80% 20%,rgba(243,112,33,.16),transparent 30%),var(--navy);color:white}
+.conclusion-box{max-width:900px}
+.conclusion h2{color:white}
+.conclusion p{color:#c8d3e0;font-size:18px}
+.conclusion-highlight{margin-top:30px;padding:25px;border-left:4px solid var(--orange);background:rgba(255,255,255,.06);border-radius:0 14px 14px 0;font-size:21px;font-weight:700}
+
+/* FOOTER */
+footer{padding:35px 0;color:#98a2b3;background:#0d1726;font-size:14px}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;gap:25px;flex-wrap:wrap}
+.footer-brand{color:white;font-weight:800}
+.footer-logos{display:flex;align-items:center;gap:18px}
+.footer-logos .logo-ap{width:90px;height:48px}
+.footer-logos .logo-draytek{width:125px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+    .nav-links{display:none}
+    .problem-grid{grid-template-columns:1fr}
+    .flow{grid-template-columns:1fr}
+    .flow-arrow{transform:rotate(90deg)}
+    .pillar-grid{grid-template-columns:1fr}
+    .feature-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+    .container{width:min(100% - 28px,1180px)}
+    section{padding:65px 0}
+    .hero{padding:80px 0}
+    .hero-description{font-size:17px}
+    .architecture-box{padding:25px}
+    .pillar-number{width:70px;height:70px;font-size:24px}
+    .comparison-table{min-width:700px}
+    .brand-group{gap:10px}
+    .logo-ap{width:82px;height:48px}
+    .logo-draytek{width:115px}
+    .brand-divider{height:28px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="container nav">
+        <div class="brand-group">
+            <img class="logo-ap"
+                 src="data:image/png;base64,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"
+                 alt="AN PHÁT">
+            <div class="brand-divider"></div>
+            <img class="logo-draytek"
+                 src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Logo_of_DrayTek.svg"
+                 alt="DrayTek">
+        </div>
+
+        <nav class="nav-links">
+            <a href="#tong-quan">Tổng quan</a>
+            <a href="#mo-hinh">Mô hình</a>
+            <a href="#5-gia-tri">5 hướng phân tích</a>
+            <a href="#traffic-matrix">Traffic Matrix</a>
+            <a href="#troubleshooting">Troubleshooting</a>
+        </nav>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <div class="eyebrow">DrayOS 5 · Policy Route · Multi-WAN</div>
+            <h1>2 WAN không chỉ để <span>Load Balance</span></h1>
+            <p class="hero-description">
+                Policy Route cho phép thiết kế cách từng loại traffic sử dụng
+                tài nguyên WAN: đi WAN nào, sử dụng một hay nhiều WAN,
+                phân bổ theo IP hay Session, sử dụng Public IP nào và
+                xử lý như thế nào khi đường truyền gặp sự cố.
+            </p>
+            <div class="hero-buttons">
+                <a href="#5-gia-tri" class="btn btn-primary">Khám phá 5 hướng phân tích</a>
+                <a href="#mo-hinh" class="btn btn-secondary">Xem mô hình</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="tong-quan">
+    <div class="container">
+        <div class="section-heading">
+            <div class="section-label">Tư duy thiết kế</div>
+            <h2>Từ Load Balance sang Traffic Engineering</h2>
+            <p>
+                Multi-WAN hiệu quả không nhất thiết là chia đều traffic
+                giữa các đường truyền. Vấn đề quan trọng hơn là xác định
+                loại traffic nào cần sự ổn định, loại nào cần tận dụng
+                nhiều WAN và loại nào cần kiểm soát Public IP.
+            </p>
+        </div>
+
+        <div class="problem-grid">
+            <div class="problem-card"><div class="problem-number">01</div><h3>Hiệu quả băng thông</h3><p>Phân bổ traffic có nhiều session sang nhiều WAN để tận dụng tổng tài nguyên đường truyền.</p></div>
+            <div class="problem-card"><div class="problem-number">02</div><h3>Ổn định phiên</h3><p>Các dịch vụ nhạy cảm với Public IP có thể ưu tiên IP-Based để duy trì đường đi ổn định.</p></div>
+            <div class="problem-card"><div class="problem-number">03</div><h3>Kiểm soát Public IP</h3><p>Server, VoIP, API hoặc hệ thống cần whitelist có thể được ghim vào WAN phù hợp.</p></div>
+            <div class="problem-card"><div class="problem-number">04</div><h3>Trải nghiệm ứng dụng</h3><p>Mỗi Application, Domain, Country hoặc nhóm người dùng có thể có một chiến lược WAN riêng.</p></div>
+            <div class="problem-card"><div class="problem-number">05</div><h3>Troubleshooting</h3><p>Có thể lần theo traffic từ Source đến Policy, Pool, Mode và WAN thực tế để xác định nguyên nhân.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="architecture" id="mo-hinh">
+    <div class="container">
+        <div class="section-heading">
+            <div class="section-label">Architecture</div>
+            <h2>Một Policy Route là một quyết định về Traffic</h2>
+            <p>
+                Mỗi Policy Route có thể được thiết kế với tập WAN,
+                phương thức phân bổ và yêu cầu riêng.
+            </p>
+        </div>
+
+        <div class="architecture-box">
+            <div class="flow">
+                <div class="flow-item"><strong>Traffic</strong><span>Source / Destination</span></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-item"><strong>Policy Route</strong><span>App / Domain / IP / Country</span></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-item"><strong>WAN Pool</strong><span>WAN1 / WAN2 / ...</span></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-item"><strong>Mode</strong><span>IP-Based / Session-Based</span></div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-item"><strong>Actual WAN</strong><span>Public IP / Path</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="5-gia-tri">
+    <div class="container">
+        <div class="section-heading">
+            <div class="section-label">5 hướng phân tích</div>
+            <h2>Thiết kế Multi-WAN theo bản chất Traffic</h2>
+            <p>
+                Không có một chế độ Load Balance phù hợp cho mọi loại traffic.
+                Hãy xác định đặc tính của từng workload trước khi chọn WAN và Mode.
+            </p>
+        </div>
+    </div>
+
+    <div class="pillar">
+        <div class="container"><div class="pillar-grid">
+            <div class="pillar-number">01</div><div>
+                <h2>Hiệu quả băng thông</h2>
+                <p class="pillar-intro">Session-Based phù hợp với workload tạo nhiều kết nối đồng thời.</p>
+                <div class="feature-grid">
+                    <div class="feature"><h4>Một connection không cộng hai WAN</h4><p>Một kết nối đơn lẻ không tự động chạy đồng thời trên WAN1 và WAN2.</p></div>
+                    <div class="feature"><h4>Nhiều session tạo ra lợi thế</h4><p>Download, Video, Backup, Cloud Sync hoặc workload nhiều session có thể phân bổ qua nhiều WAN.</p></div>
+                    <div class="feature"><h4>Không nên chia đều mọi traffic</h4><p>Traffic cần Public IP ổn định nên có Policy riêng.</p></div>
+                    <div class="feature"><h4>Phân bổ tài nguyên theo workload</h4><p>Mục tiêu không đơn thuần là "chia tải", mà là dùng đúng WAN cho đúng loại traffic.</p></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="pillar">
+        <div class="container"><div class="pillar-grid">
+            <div class="pillar-number">02</div><div>
+                <h2>Độ ổn định của phiên</h2>
+                <p class="pillar-intro">Một số dịch vụ có thể nhạy cảm với việc thay đổi Public IP.</p>
+                <div class="feature-grid">
+                    <div class="feature"><h4>IP-Based</h4><p>Giữ traffic của cùng source theo một đường WAN nhất định, giúp Public IP ổn định hơn.</p></div>
+                    <div class="feature"><h4>Session-Based</h4><p>Các session mới có thể được phân bổ sang nhiều WAN.</p></div>
+                    <div class="feature"><h4>Nhóm cần cân nhắc IP-Based</h4><p>Banking, ERP, SSH và dịch vụ có cơ chế kiểm soát Public IP.</p></div>
+                    <div class="feature"><h4>Nhóm có thể dùng Session-Based</h4><p>Video, Download, Cloud Sync, Backup, Update hoặc Speedtest.</p></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="pillar">
+        <div class="container"><div class="pillar-grid">
+            <div class="pillar-number">03</div><div>
+                <h2>Kiểm soát Public IP</h2>
+                <p class="pillar-intro">Server hoặc dịch vụ yêu cầu Public IP cố định có thể được định tuyến qua WAN phù hợp.</p>
+                <div class="feature-grid">
+                    <div class="feature"><h4>Server</h4><p>Ghim traffic vào WAN có Public IP đã được đối tác whitelist.</p></div>
+                    <div class="feature"><h4>VoIP</h4><p>Lựa chọn WAN phù hợp với yêu cầu kết nối hoặc hệ thống SIP/VoIP.</p></div>
+                    <div class="feature"><h4>API / SaaS</h4><p>Dịch vụ yêu cầu khai báo Public IP có thể được định tuyến qua WAN tương ứng.</p></div>
+                    <div class="feature"><h4>Failover cần được cân nhắc</h4><p>Chuyển sang WAN dự phòng có thể làm thay đổi Public IP.</p></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="pillar">
+        <div class="container"><div class="pillar-grid">
+            <div class="pillar-number">04</div><div>
+                <h2>Tối ưu trải nghiệm ứng dụng</h2>
+                <p class="pillar-intro">Thiết kế Policy theo Application, Domain, Country, IP hoặc nhóm người dùng.</p>
+                <div class="feature-grid">
+                    <div class="feature"><h4>Application</h4><p>Các ứng dụng có thể được áp dụng Policy Route khác nhau khi nền tảng hỗ trợ nhận diện Application.</p></div>
+                    <div class="feature"><h4>Domain</h4><p>Traffic đến domain cụ thể có thể được đưa vào Policy Route riêng.</p></div>
+                    <div class="feature"><h4>Country</h4><p>Country Object có thể xây dựng chính sách dựa trên GeoIP của destination.</p></div>
+                    <div class="feature"><h4>Policy Priority</h4><p>Rule cụ thể nên được đặt trước rule tổng quát để traffic được match đúng.</p></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="pillar">
+        <div class="container"><div class="pillar-grid">
+            <div class="pillar-number">05</div><div>
+                <h2>Thiết kế & Troubleshooting</h2>
+                <p class="pillar-intro">Khi mỗi loại traffic có Policy riêng, troubleshooting cũng trở nên có cấu trúc hơn.</p>
+                <div class="feature-grid">
+                    <div class="feature"><h4>Traffic Matrix</h4><p>Xác định Source, Destination, Policy, WAN Pool, Mode và hành vi mong muốn.</p></div>
+                    <div class="feature"><h4>Policy Priority</h4><p>Rule cụ thể phải được xử lý trước rule tổng quát.</p></div>
+                    <div class="feature"><h4>Không cần đổi toàn bộ Internet</h4><p>Khi một ứng dụng gặp vấn đề, kiểm tra Policy tương ứng thay vì chuyển toàn bộ hệ thống sang WAN khác.</p></div>
+                    <div class="feature"><h4>Truy vết theo chuỗi</h4><p>Source → Destination → Priority → Policy → Pool → Mode → WAN → Failover.</p></div>
+                </div>
+            </div>
+        </div></div>
+    </div>
+</section>
+
+<section class="comparison">
+    <div class="container">
+        <div class="section-heading">
+            <div class="section-label">IP-Based vs Session-Based</div>
+            <h2>Chọn Mode theo đặc tính của Traffic</h2>
+            <p>Hai phương thức phục vụ hai mục tiêu thiết kế khác nhau.</p>
+        </div>
+
+        <div style="overflow-x:auto">
+            <table class="comparison-table">
+                <thead><tr><th>Tiêu chí</th><th>IP-Based</th><th>Session-Based</th></tr></thead>
+                <tbody>
+                    <tr><td><strong>Mục tiêu chính</strong></td><td>Ổn định đường đi / Public IP</td><td>Phân bổ nhiều session</td></tr>
+                    <tr><td><strong>Public IP</strong></td><td><span class="tag tag-ip">Ổn định hơn</span></td><td>Có thể thay đổi giữa các session</td></tr>
+                    <tr><td><strong>Nhiều connection</strong></td><td>Tập trung theo IP</td><td>Có thể phân bổ qua nhiều WAN</td></tr>
+                    <tr><td><strong>Phù hợp</strong></td><td>ERP, Banking, SSH, dịch vụ nhạy IP</td><td>Download, Video, Backup, Cloud Sync</td></tr>
+                    <tr><td><strong>Ưu tiên</strong></td><td>Tính ổn định</td><td>Khai thác tài nguyên WAN</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="matrix" id="traffic-matrix">
+    <div class="container">
+        <div class="section-heading">
+            <div class="section-label">Traffic Matrix</div>
+            <h2>Một ví dụ về cách thiết kế Policy</h2>
+            <p>Thay vì "mọi traffic → Load Balance", hãy xây dựng chiến lược theo từng nhóm workload.</p>
+        </div>
+        <div class="matrix-table-wrapper">
+            <table class="matrix-table">
+                <thead><tr><th>Traffic</th><th>WAN Pool</th><th>Mode</th><th>Mục tiêu</th></tr></thead>
+                <tbody>
+                    <tr><td>Server / API</td><td>WAN1</td><td>IP-Based</td><td>Public IP ổn định</td></tr>
+                    <tr><td>Banking / ERP</td><td>WAN1 + WAN2</td><td>IP-Based</td><td>Ổn định phiên</td></tr>
+                    <tr><td>Video / Download</td><td>WAN1 + WAN2</td><td>Session-Based</td><td>Tận dụng nhiều WAN</td></tr>
+                    <tr><td>Cloud Backup</td><td>WAN1 + WAN2</td><td>Session-Based</td><td>Khai thác tổng tài nguyên</td></tr>
+                    <tr><td>Guest Internet</td><td>WAN1 + WAN2</td><td>Session-Based</td><td>Phân bổ tải</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<section class="troubleshooting" id="troubleshooting">
+    <div class="container">
+        <div class="section-heading">
+            <div class="section-label">Troubleshooting</div>
+            <h2>Từ "Internet chậm" đến một quy trình kiểm tra cụ thể</h2>
+            <p>Khi Multi-WAN được thiết kế theo Policy Route, troubleshooting có thể bắt đầu từ chính traffic đang gặp vấn đề.</p>
+        </div>
+        <div class="debug-flow">
+            <div class="debug-step">Source</div><div class="debug-arrow">→</div>
+            <div class="debug-step">Destination</div><div class="debug-arrow">→</div>
+            <div class="debug-step">Priority</div><div class="debug-arrow">→</div>
+            <div class="debug-step">Policy</div><div class="debug-arrow">→</div>
+            <div class="debug-step">WAN Pool</div><div class="debug-arrow">→</div>
+            <div class="debug-step">Mode</div><div class="debug-arrow">→</div>
+            <div class="debug-step">Actual WAN</div><div class="debug-arrow">→</div>
+            <div class="debug-step">Failover</div>
+        </div>
+    </div>
+</section>
+
+<section class="conclusion">
+    <div class="container">
+        <div class="conclusion-box">
+            <div class="section-label">Kết luận</div>
+            <h2>Multi-WAN hiệu quả bắt đầu từ việc hiểu Traffic</h2>
+            <p>
+                Với DrayOS, hai WAN không nhất thiết phải được xem như một
+                "ống băng thông" duy nhất. Policy Route cho phép xây dựng
+                kiến trúc trong đó mỗi nhóm traffic có chiến lược sử dụng WAN riêng.
+            </p>
+            <div class="conclusion-highlight">
+                Traffic nào được phép đi WAN nào, dùng bao nhiêu WAN,
+                IP-Based hay Session-Based, Public IP nào và xử lý thế nào
+                khi WAN gặp sự cố — đó mới là bài toán Multi-WAN thực sự.
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer>
+    <div class="container footer-inner">
+        <div>
+            <div class="footer-brand">CTY TNHH CNTT AN PHÁT</div>
+            <div>Hỗ trợ kỹ thuật chuyên nghiệp</div>
+            <div>Điện thoại: 1900.633.641 · Email: hotro@anphat.vn · Website: www.anphat.vn</div>
+        </div>
+
+        <div class="footer-logos">
+            <img class="logo-ap"
+                 src="data:image/png;base64,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"
+                 alt="AN PHÁT">
+            <img class="logo-draytek"
+                 src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Logo_of_DrayTek.svg"
+                 alt="DrayTek">
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
